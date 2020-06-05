@@ -38,6 +38,18 @@ Reset:
     CLEAN_START              ; call macro to reset memory and registers
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Initialize RAM variables and TIA registers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    lda #10
+    sta StanYPos              ; StanYPos = 10
+    lda #60
+    sta StanXPos              ; StanXPos = 60
+    lda #83
+    sta GuyYPos               ; GuyYPos = 83
+    lda #54
+    sta GuyXPos               ; GuyXPos = 54
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Initialize the pointers to the correct lookup table adresses
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     lda #<StanSprite
@@ -66,6 +78,20 @@ Reset:
 StartFrame:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Calculations and tasks performed pre-VBLANK
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    lda StanXPos
+    ldy #0
+    jsr SetObjectXPos        ; set player0 horizontal position
+
+    lda GuyXPos
+    ldy #1
+    jsr SetObjectXPos        ; set player1 horizontal position
+
+    sta WSYNC
+    sta HMOVE                ; apply horizontal offsets previously set
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Display VSYNC and VBLANK
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     lda #2
@@ -91,6 +117,56 @@ StartFrame:
     REPEND
     lda #0
     sta VBLANK               ; turn off VBLANK
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Display the 96 visible scanlines of our main game (because 2-line kernel)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+GameVisibleLine:
+
+    ldx #96                  ; X counts the number of remaining scanlines
+.GameLineLoop:
+.AreWeInsideStanSprite:
+    txa                      ; transfer X to A
+    sec                      ; make sure carry flag is set before subtraction
+    sbc StanYPos              ; subtract sprite Y-coordinate
+    cmp STAN_HEIGHT           ; are we inside the sprite height bounds?
+    bcc .DrawSpriteP0        ; if result < SpriteHeight, call the draw routine
+    lda #0                   ; else, set lookup index to zero
+.DrawSpriteP0:
+    clc                      ; clears carry flag before addition
+    adc StanAnimOffset        ; jump to correct sprite frame address in memory
+
+    tay                      ; load Y so we can work with the pointer
+    lda (StanSpritePtr),Y     ; load player0 bitmap data from lookup table
+    sta WSYNC                ; wait for scanline
+    sta GRP0                 ; set graphics for player0
+    lda (StanColorPtr),Y      ; load player color from lookup table
+    sta COLUP0               ; set color of player 0
+
+.AreWeInsideGuySprite:
+    txa                      ; transfer X to A
+    sec                      ; make sure carry flag is set before subtraction
+    sbc GuyYPos           ; subtract sprite Y-coordinate
+    cmp GUY_HEIGHT        ; are we inside the sprite height bounds?
+    bcc .DrawSpriteP1        ; if result < SpriteHeight, call the draw routine
+    lda #0                   ; else, set lookup index to zero
+.DrawSpriteP1:
+    tay                      ; load Y so we can work with the pointer
+
+    lda #%00000101
+    sta NUSIZ1               ; stretch player 1 sprite
+
+    lda (GuySpritePtr),Y  ; load player1 bitmap data from lookup table
+    sta WSYNC                ; wait for scanline
+    sta GRP1                 ; set graphics for player1
+    lda (GuyColorPtr),Y   ; load player color from lookup table
+    sta COLUP1               ; set color of player 1
+
+    dex                      ; X--
+    bne .GameLineLoop        ; repeat next main game scanline until finished
+
+    lda #0
+    sta StanAnimOffset        ; reset Stan animation frame to zero each frame
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Process joystick input for player0 up/down/left/right
@@ -158,6 +234,72 @@ SetObjectXPos subroutine
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Declare ROM lookup tables
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+StanSprite
+  .byte #$00
+  .byte #%00010100;$34
+  .byte #%00010100;$70
+  .byte #%00011100;$70
+  .byte #%00011100;$0E
+  .byte #%00101010;$0E
+  .byte #%00111110;$0E
+  .byte #%00001000;$3E
+  .byte #%00011000;$00
+
+StanSpriteRide
+  .byte #$00
+  .byte #%00010100;$34
+  .byte #%00010100;$70
+  .byte #%00011100;$70
+  .byte #%00011100;$0E
+  .byte #%00101010;$0E
+  .byte #%00111110;$0E
+  .byte #%00001000;$3E
+  .byte #%00011000;$00
+
+GuySprite
+  .byte #$00
+  .byte #%00010100;$34
+  .byte #%00010100;$70
+  .byte #%00011100;$70
+  .byte #%00011100;$0E
+  .byte #%00101010;$0E
+  .byte #%00111110;$0E
+  .byte #%00001000;$3E
+  .byte #%00011000;$00
+
+StanColor
+  .byte #$00
+  .byte #$34;
+  .byte #$70;
+  .byte #$70;
+  .byte #$0E;
+  .byte #$0E;
+  .byte #$0E;
+  .byte #$3E;
+  .byte #$00;
+
+StanColorRide
+  .byte #$00
+  .byte #$34;
+  .byte #$70;
+  .byte #$70;
+  .byte #$0E;
+  .byte #$0E;
+  .byte #$0E;
+  .byte #$3E;
+  .byte #$00;
+
+GuyColor
+  .byte #$00
+  .byte #$34;
+  .byte #$70;
+  .byte #$70;
+  .byte #$0E;
+  .byte #$0E;
+  .byte #$0E;
+  .byte #$3E;
+  .byte #$00;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Complete ROM size with exactly 4KB

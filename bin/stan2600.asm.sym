@@ -1,20 +1,25 @@
 --- Symbol List (sorted by symbol)
+0.AreWeInsideGuySprite   f107                  
+0.AreWeInsideStanSprite  f0ef                  
+0.DrawSpriteP0           f0f9              (R )
+0.DrawSpriteP1           f111              (R )
 0.FREE_BYTES             0000                  
+0.GameLineLoop           f0ef              (R )
 1.CLEAR_STACK            f006              (R )
-2.Div15Loop              f105              (R )
+2.Div15Loop              f161              (R )
 AUDC0                    0015                  
 AUDC1                    0016                  
 AUDF0                    0017                  
 AUDF1                    0018                  
 AUDV0                    0019                  
 AUDV1                    001a                  
-CheckP0Down              f0d8              (R )
-CheckP0Left              f0e5              (R )
-CheckP0Right             f0f2              (R )
-CheckP0Up                f0cb                  
+CheckP0Down              f134              (R )
+CheckP0Left              f141              (R )
+CheckP0Right             f14e              (R )
+CheckP0Up                f127                  
 COLUBK                   0009                  
-COLUP0                   0006                  
-COLUP1                   0007                  
+COLUP0                   0006              (R )
+COLUP1                   0007              (R )
 COLUPF                   0008                  
 CTRLPF                   000a                  
 CXBLPF                   0006                  
@@ -29,21 +34,22 @@ CXPPMM                   0007
 ENABL                    001f                  
 ENAM0                    001d                  
 ENAM1                    001e                  
-EndInputCheck            f0ff              (R )
-GRP0                     001b                  
-GRP1                     001c                  
-GUY_HEIGHT               0009                  
-GuyColor                 0000 ????         (R )
+EndInputCheck            f15b              (R )
+GameVisibleLine          f0ed                  
+GRP0                     001b              (R )
+GRP1                     001c              (R )
+GUY_HEIGHT               0009              (R )
+GuyColor                 f19f              (R )
 GuyColorPtr              008a              (R )
-GuySprite                0000 ????         (R )
+GuySprite                f184              (R )
 GuySpritePtr             0088              (R )
-GuyXPos                  0082                  
-GuyYPos                  0083                  
+GuyXPos                  0082              (R )
+GuyYPos                  0083              (R )
 HMBL                     0024                  
 HMCLR                    002b                  
 HMM0                     0022                  
 HMM1                     0023                  
-HMOVE                    002a                  
+HMOVE                    002a              (R )
 HMP0                     0020              (R )
 HMP1                     0021                  
 INPT0                    0008                  
@@ -54,7 +60,7 @@ INPT4                    000c
 INPT5                    000d                  
 INTIM                    0284                  
 NUSIZ0                   0004                  
-NUSIZ1                   0005                  
+NUSIZ1                   0005              (R )
 PF0                      000d                  
 PF1                      000e                  
 PF2                      000f                  
@@ -69,16 +75,18 @@ RESMP1                   0029
 RESP0                    0010              (R )
 RESP1                    0011                  
 RSYNC                    0003                  
-SetObjectXPos            f102                  
+SetObjectXPos            f15e              (R )
 STAN_HEIGHT              0009              (R )
 StanAnimOffset           008c              (R )
-StanColor                0000 ????         (R )
+StanColor                f18d              (R )
 StanColorPtr             0086              (R )
-StanSprite               0000 ????         (R )
+StanColorRide            f196                  
+StanSprite               f172              (R )
 StanSpritePtr            0084              (R )
+StanSpriteRide           f17b                  
 StanXPos                 0080              (R )
 StanYPos                 0081              (R )
-StartFrame               f02b              (R )
+StartFrame               f03b              (R )
 SWACNT                   0281                  
 SWBCNT                   0283                  
 SWCHA                    0280              (R )
